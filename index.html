@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Julio Alvarez – DevOps & SRE for SaaS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="DevOps, SRE, and origin hardening for SaaS and content-heavy businesses. Eliminate downtime, slow deployments, runaway cloud bills, and exposed origins."
+  />
+
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-alt: #0a1020;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border-subtle: #1f2933;
+      --danger: #f97373;
+      --success: #4ade80;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top left, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(16px);
+      background: linear-gradient(
+        to right,
+        rgba(15, 23, 42, 0.8),
+        rgba(15, 23, 42, 0.4),
+        transparent
+      );
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-pill {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #38bdf8, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #e5f2ff;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4),
+        0 16px 35px rgba(15, 23, 42, 0.9);
+    }
+
+    .logo-img {
+      background-image: url('img/fotoejecutiva.png');
+      background-size: cover;
+      background-position: center center;
+      color: transparent;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-text strong {
+      font-size: 0.98rem;
+    }
+
+    .brand-text span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .nav-links a {
+      position: relative;
+      padding-bottom: 4px;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(to right, #38bdf8, #22c55e);
+      transition: width 0.18s ease-out;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #e0f2fe;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.15), transparent);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: background 0.15s ease-out, transform 0.12s ease-out,
+        box-shadow 0.12s ease-out;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+    }
+
+    .nav-cta span {
+      font-size: 1rem;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.9);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.25), transparent);
+    }
+
+    main {
+      flex: 1;
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3.5rem;
+    }
+
+    /* hero */
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 2.8rem;
+      align-items: center;
+      padding-block: 2rem 2.5rem;
+    }
+
+    .hero-heading {
+      font-size: clamp(2.2rem, 3vw, 2.8rem);
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-heading span {
+      background: linear-gradient(120deg, #38bdf8, #22c55e);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-tagline {
+      font-size: 1.02rem;
+      color: var(--muted);
+      max-width: 32rem;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 1.4rem 0 1.6rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.32rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #cbd5f5;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .badge--accent {
+      border-color: rgba(56, 189, 248, 0.7);
+      background: var(--accent-soft);
+      color: #e0f2fe;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.68rem 1.3rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+        background 0.18s ease-out, border-color 0.18s ease-out;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #38bdf8, #22c55e);
+      color: #0b1220;
+      box-shadow: 0 18px 45px rgba(22, 163, 74, 0.55);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 22px 55px rgba(22, 163, 74, 0.7);
+    }
+
+    .btn-ghost {
+      border-color: rgba(148, 163, 184, 0.6);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
+    }
+
+    .hero-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .hero-note strong {
+      color: #e5e7eb;
+    }
+
+    .hero-right {
+      border-radius: var(--radius-lg);
+      padding: 1.2rem 1.2rem 1.1rem;
+      background: radial-gradient(circle at top left, #0f172a, #020617);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .meta-chip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+      font-size: 0.75rem;
+    }
+
+    .meta-chip {
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .meta-chip span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+    }
+
+    .load-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+      margin-bottom: 0.9rem;
+      position: relative;
+    }
+
+    .load-bar-fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #22c55e, #38bdf8, #22c55e);
+      background-size: 200% 100%;
+      animation: loadPulse 9s ease-in-out infinite;
+    }
+
+    @keyframes loadPulse {
+      0% { transform: translateX(-40%); }
+      50% { transform: translateX(0%); }
+      100% { transform: translateX(20%); }
+    }
+
+    .hero-right h2 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-right p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-right ul {
+      list-style: none;
+      font-size: 0.82rem;
+      color: #e5e7eb;
+      display: grid;
+      gap: 0.25rem;
+      margin: 0.3rem 0 0.4rem;
+    }
+
+    .hero-right li::before {
+      content: "›";
+      color: var(--accent);
+      margin-right: 0.4rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.3rem;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+      color: var(--muted);
+    }
+
+    /* sections */
+
+    .section {
+      margin-top: 2.5rem;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.96),
+        rgba(2, 6, 23, 0.98)
+      );
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      padding: 1.6rem 1.5rem 1.7rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 550;
+    }
+
+    .section-kicker {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .subtle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      max-width: 36rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1.4rem;
+      margin-top: 0.3rem;
+    }
+
+    .card {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      padding: 1rem 1rem 1.05rem;
+      font-size: 0.86rem;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .card small {
+      font-size: 0.76rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .card ul {
+      list-style: none;
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    .card li::before {
+      content: "•";
+      color: var(--accent);
+      margin-right: 0.35rem;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-bottom: 0.6rem;
+    }
+
+    .highlight {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .quote {
+      font-size: 0.84rem;
+      color: var(--muted);
+      border-left: 2px solid rgba(148, 163, 184, 0.7);
+      padding-left: 0.7rem;
+      margin-top: 0.35rem;
+    }
+
+    .quote strong {
+      color: #e5e7eb;
+    }
+
+    .timeline {
+      list-style: none;
+      display: grid;
+      gap: 0.4rem;
+      font-size: 0.86rem;
+    }
+
+    .timeline li span.step {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+
+    .timeline li span.title {
+      color: #e5e7eb;
+      font-weight: 500;
+      display: block;
+    }
+
+    .timeline li span.desc {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    /* mini-diagram security */
+
+    .diagram {
+      margin-top: 0.6rem;
+      border-radius: var(--radius-md);
+      padding: 0.85rem 0.9rem 0.95rem;
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.9);
+    }
+
+    .diagram-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+
+    .diagram-node {
+      flex: 1 1 110px;
+      min-width: 0;
+      padding: 0.45rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .diagram-node--accent {
+      border-color: rgba(56, 189, 248, 0.9);
+      background: radial-gradient(circle at 20% 0, rgba(56, 189, 248, 0.25), #020617);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+    }
+
+    .diagram-arrow {
+      flex: 0 0 auto;
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-inline: 0.15rem;
+    }
+
+    .diagram-caption {
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .diagram-caption strong {
+      color: #e5e7eb;
+    }
+
+    /* contact section */
+
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.3rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .contact-main {
+      max-width: 32rem;
+      font-size: 0.9rem;
+    }
+
+    .contact-main p {
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-width: 220px;
+      font-size: 0.8rem;
+    }
+
+    .contact-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .contact-meta span {
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--muted);
+    }
+
+    footer {
+      border-top: 1px solid #020617;
+      padding: 1.6rem 1.25rem 2.4rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    footer .inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer span.accent {
+      color: var(--accent);
+    }
+
+    @media (max-width: 800px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .hero-right {
+        order: -1;
+      }
+      .nav-links {
+        display: none;
+      }
+      .wrap {
+        padding-inline: 1rem;
+      }
+      .diagram-row {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .section {
+        padding: 1.2rem 1rem 1.3rem;
+      }
+      .hero {
+        padding-block: 1.6rem 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav {
+        padding: 0.75rem 1rem;
+      }
+
+      .nav-left {
+        flex: 1 1 100%;
+      }
+
+      .nav-cta {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .hero-ctas {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero-ctas .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .diagram-node {
+        white-space: normal;
+      }
+
+      .contact-actions {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="top"></div>
+  <div class="page">
+    <header>
+      <div class="nav">
+        <a href="#top" class="nav-left">
+          <div class="logo-pill logo-img"></div>
+          <div class="brand-text">
+            <strong>Julio Alvarez</strong>
+            <span data-i18n="brand.subtitle">DevOps &amp; SRE for SaaS</span>
+          </div>
+        </a>
+
+        <div class="nav-links" aria-label="Primary">
+          <a href="#services" data-i18n="nav.services">Services</a>
+          <a href="#security" data-i18n="nav.security">Security</a>
+          <a href="#wins" data-i18n="nav.wins">Wins</a>
+          <a href="#process" data-i18n="nav.process">Process</a>
+          <a href="#contact" data-i18n="nav.contact">Contact</a>
+        </div>
+
+        <a href="#contact" class="nav-cta">
+          <span>●</span>
+          <span data-i18n="nav.tagline">Infrastructure that just works</span>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <!-- HERO -->
+        <section class="hero">
+          <div>
+            <p class="section-kicker" data-i18n="hero.kicker">
+              DevOps · SRE · Origin Hardening
+            </p>
+            <h1 class="hero-heading" data-i18n="hero.title">
+              Infrastructure that <span>works today</span>, scales tomorrow,
+              and doesn’t leak your origin.
+            </h1>
+            <p class="hero-tagline" data-i18n="hero.tagline">
+              I help SaaS and content-heavy businesses eliminate downtime, slow deployments,
+              runaway cloud bills, and quietly exposed origins that attackers love.
+            </p>
+
+            <div class="hero-badges">
+              <span class="badge badge--accent" data-i18n="hero.badge1">
+                Kubernetes · Terraform · Observability
+              </span>
+              <span class="badge" data-i18n="hero.badge2">
+                Origin hardening · Access controls
+              </span>
+              <span class="badge" data-i18n="hero.badge3">
+                Hands-on, no-fluff execution
+              </span>
+            </div>
+
+            <div class="hero-ctas">
+              <a href="#contact" class="btn btn-primary" data-i18n="hero.primaryCta">
+                <span>Book a 60–90 min audit</span>
+                <span>→</span>
+              </a>
+              <a href="#services" class="btn btn-ghost" data-i18n="hero.secondaryCta">
+                <span>See how I work</span>
+              </a>
+            </div>
+
+            <p class="hero-note" data-i18n="hero.note">
+              <strong>Low-risk start:</strong> we begin with a focused audit, I send a prioritized
+              action plan, and we execute in short, safe iterations — with
+              <strong>no more “direct to origin” surprises.</strong>
+            </p>
+          </div>
+
+          <aside class="hero-right" aria-label="Reliability snapshot">
+            <div class="meta-chip-row">
+              <div class="meta-chip" data-i18n="hero.meta1">
+                <span class="dot"></span>
+                <span>Prod health: stable</span>
+              </div>
+              <div class="meta-chip" data-i18n="hero.meta2">
+                <span>↓ downtime</span> · <span>↓ cloud spend</span>
+              </div>
+            </div>
+
+            <div class="load-bar">
+              <div class="load-bar-fill"></div>
+            </div>
+
+            <h2 data-i18n="heroRight.title">What I do best</h2>
+            <p data-i18n="heroRight.desc">
+              Practical DevOps &amp; SRE help where it hurts the most:
+            </p>
+            <ul>
+              <li data-i18n="heroRight.li1">
+                <strong>Kubernetes reliability &amp; scaling</strong> (DO / AWS / Vultr / IBM Cloud / GCP):
+                audits, HPA / requests-limits, node tuning, networking.
+              </li>
+              <li data-i18n="heroRight.li2">
+                <strong>Infrastructure as Code with Terraform:</strong> module refactors, clean pipelines,
+                reproducible environments.
+              </li>
+              <li data-i18n="heroRight.li3">
+                <strong>Observability &amp; performance:</strong> New Relic / Prometheus / Grafana to
+                catch issues before users do.
+              </li>
+              <li data-i18n="heroRight.li4">
+                <strong>Origin &amp; access hardening:</strong> lock down who can even reach your origin,
+                so edge bypasses stop being a threat.
+              </li>
+            </ul>
+
+            <div class="pill-row">
+              <span class="pill" data-i18n="hero.pill1">Kubernetes audits</span>
+              <span class="pill" data-i18n="hero.pill2">Terraform refactors</span>
+              <span class="pill" data-i18n="hero.pill3">Incident prep</span>
+              <span class="pill" data-i18n="hero.pill4">Performance tuning</span>
+              <span class="pill" data-i18n="hero.pill5">Origin hardening</span>
+            </div>
+          </aside>
+        </section>
+
+        <!-- SERVICES -->
+        <section id="services" class="section" aria-labelledby="services-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker" id="services-title" data-i18n="services.kicker">
+                Capabilities
+              </p>
+              <h2 class="section-title" data-i18n="services.title">
+                Where I plug into your stack
+              </h2>
+            </div>
+            <p class="subtle" data-i18n="services.subtle">
+              Think of me as your on-call DevOps / SRE partner for when “it’s fine for now”
+              is no longer acceptable — especially in production.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 data-i18n="services.card1.title">Kubernetes reliability &amp; scaling</h3>
+              <small data-i18n="services.card1.small">DO · AWS · Vultr · IBM Cloud · GCP</small>
+              <p class="tagline" data-i18n="services.card1.tagline">
+                From “it works on my cluster” to predictable, documented capacity.
+              </p>
+              <ul>
+                <li data-i18n="services.card1.li1">Workload and cluster audits</li>
+                <li data-i18n="services.card1.li2">HPA, requests/limits, and node sizing</li>
+                <li data-i18n="services.card1.li3">Network and ingress sanity checks</li>
+                <li data-i18n="services.card1.li4">Safer rollouts and blue/green strategies</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="services.card2.title">Terraform &amp; Infrastructure as Code</h3>
+              <small data-i18n="services.card2.small">Modules · Pipelines · Environments</small>
+              <p class="tagline" data-i18n="services.card2.tagline">
+                Clean, repeatable infra so you don’t fear <code>terraform apply</code>.
+              </p>
+              <ul>
+                <li data-i18n="services.card2.li1">Module refactors and standards</li>
+                <li data-i18n="services.card2.li2">CI pipelines for plans and applies</li>
+                <li data-i18n="services.card2.li3">Reproducible staging / prod environments</li>
+                <li data-i18n="services.card2.li4">Guardrails for safer changes</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top: 1rem;">
+            <div class="card">
+              <h3 data-i18n="services.card3.title">Observability &amp; performance</h3>
+              <small data-i18n="services.card3.small">New Relic · Prometheus · Grafana</small>
+              <p class="tagline" data-i18n="services.card3.tagline">
+                Catch issues before users do, and know where time actually goes.
+              </p>
+              <ul>
+                <li data-i18n="services.card3.li1">Golden signals and meaningful dashboards</li>
+                <li data-i18n="services.card3.li2">Alert rules that engineers respect</li>
+                <li data-i18n="services.card3.li3">Tracing slow paths and hotspots</li>
+                <li data-i18n="services.card3.li4">Performance tuning with real data</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="services.card4.title">Production hardening</h3>
+              <small data-i18n="services.card4.small">Runbooks · Playbooks · Docs</small>
+              <p class="tagline" data-i18n="services.card4.tagline">
+                Make 3am incidents boring, documented, and recoverable.
+              </p>
+              <ul>
+                <li data-i18n="services.card4.li1">Runbooks for common failures</li>
+                <li data-i18n="services.card4.li2">Incident response workflows</li>
+                <li data-i18n="services.card4.li3">Readable, useful documentation</li>
+                <li data-i18n="services.card4.li4">Handoffs that don’t lose context</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section id="security" class="section" aria-labelledby="security-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker" data-i18n="security.kicker">
+                Security · Origin hardening
+              </p>
+              <h2 class="section-title" id="security-title" data-i18n="security.title">
+                Stop origin leakage and edge bypasses before they hurt you
+              </h2>
+            </div>
+            <p class="subtle" data-i18n="security.subtle">
+              It’s not enough to put a proxy in front of your app. If attackers can still
+              hit your origin directly, all that “security” is optional.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 data-i18n="security.lock.title">What I lock down</h3>
+              <p class="tagline" data-i18n="security.lock.tagline">
+                Hardening the path between “the internet” and your actual servers.
+              </p>
+              <ul>
+                <li data-i18n="security.lock.li1">Identify where your origin is exposed or guessable</li>
+                <li data-i18n="security.lock.li2">Ensure only traffic that passes your access layer reaches origin</li>
+                <li data-i18n="security.lock.li3">Block direct-to-origin requests and cheap bypass attempts</li>
+                <li data-i18n="security.lock.li4">Align rules with how your team actually works (no noisy breakage)</li>
+              </ul>
+              <p class="quote" data-i18n="security.lock.quote">
+                <strong>Result:</strong> your origin behaves like an internal service,
+                even if it’s technically on the public internet.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="security.flow.title">How the flow looks</h3>
+              <p class="tagline" data-i18n="security.flow.tagline">
+                From “anyone can try” to “only authenticated, policy-approved traffic gets through”.
+              </p>
+
+              <div class="diagram" aria-hidden="true">
+                <div class="diagram-row">
+                  <div class="diagram-node" data-i18n="security.flow.node1">
+                    Untrusted internet traffic
+                  </div>
+                  <div class="diagram-arrow">→</div>
+                  <div class="diagram-node diagram-node--accent" data-i18n="security.flow.node2">
+                    Access layer &amp; policy checks
+                  </div>
+                  <div class="diagram-arrow">→</div>
+                  <div class="diagram-node" data-i18n="security.flow.node3">
+                    Locked-down origin
+                  </div>
+                </div>
+                <p class="diagram-caption" data-i18n="security.flow.caption">
+                  <strong>Only requests that clear identity &amp; policy checks</strong>
+                  are allowed to touch your origin. Everyone else gets stopped at the edge.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- WINS -->
+        <section id="wins" class="section" aria-labelledby="wins-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker" data-i18n="wins.kicker">Recent wins</p>
+              <h2 class="section-title" id="wins-title" data-i18n="wins.title">
+                From “crashing under load” to “we don’t think about it anymore”
+              </h2>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 data-i18n="wins.card1.title">Stabilizing a crashing website</h3>
+              <small data-i18n="wins.card1.small">Observability + infra fixes</small>
+              <p class="tagline" data-i18n="wins.card1.tagline">
+                A content-heavy site was slowing to a crawl and falling over whenever traffic spiked.
+              </p>
+              <ul>
+                <li data-i18n="wins.card1.li1">Instrumented the stack with New Relic</li>
+                <li data-i18n="wins.card1.li2">Identified performance bottlenecks under load</li>
+                <li data-i18n="wins.card1.li3">Fixed infra and configuration issues behind the scenes</li>
+                <li data-i18n="wins.card1.li4">Result: stable, predictable performance during peaks</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="wins.card2.title">Kubernetes DevOps &amp; IaC delivery</h3>
+              <small data-i18n="wins.card2.small">“Tremendous” and “amazing” feedback</small>
+              <p class="tagline" data-i18n="wins.card2.tagline">
+                Delivered Kubernetes DevOps, Infrastructure as Code, and documentation as a cohesive package.
+              </p>
+              <ul>
+                <li data-i18n="wins.card2.li1">Production-ready Kubernetes configuration</li>
+                <li data-i18n="wins.card2.li2">Terraform-based environments and pipelines</li>
+                <li data-i18n="wins.card2.li3">Documentation teams actually read</li>
+                <li data-i18n="wins.card2.li4">
+                  Clients called the result <span class="highlight">“tremendous”</span> and
+                  <span class="highlight">“amazing”</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROCESS -->
+        <section id="process" class="section" aria-labelledby="process-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker" data-i18n="process.kicker">How we start</p>
+              <h2 class="section-title" id="process-title" data-i18n="process.title">
+                Low-risk, high-signal engagement
+              </h2>
+            </div>
+            <p class="subtle" data-i18n="process.subtle">
+              No giant rewrites on day one. We start small, gather signal, and move fast without
+              breaking prod — or exposing your origin in the process.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 data-i18n="process.card1.title">Step-by-step</h3>
+              <ul class="timeline">
+                <li>
+                  <span class="step" data-i18n="process.card1.step1">01 · Audit</span>
+                  <span class="title" data-i18n="process.card1.step1Title">60–90 min deep dive</span>
+                  <span class="desc" data-i18n="process.card1.step1Desc">
+                    We walk through your current stack, pain points, failure modes, and where your origin might be exposed.
+                  </span>
+                </li>
+                <li>
+                  <span class="step" data-i18n="process.card1.step2">02 · Action plan</span>
+                  <span class="title" data-i18n="process.card1.step2Title">Prioritized improvements</span>
+                  <span class="desc" data-i18n="process.card1.step2Desc">
+                    I send a clear, ranked list of quick wins and structural fixes across reliability,
+                    costs, and security.
+                  </span>
+                </li>
+                <li>
+                  <span class="step" data-i18n="process.card1.step3">03 · Iteration</span>
+                  <span class="title" data-i18n="process.card1.step3Title">Short, safe change cycles</span>
+                  <span class="desc" data-i18n="process.card1.step3Desc">
+                    We execute improvements in small, reversible steps that won’t wake you up at 3am.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="process.card2.title">What you get out of working with me</h3>
+              <p class="tagline" data-i18n="process.card2.tagline">
+                Less fire-fighting, more predictable engineering time.
+              </p>
+              <ul>
+                <li data-i18n="process.card2.li1">Clear picture of where your infra is fragile</li>
+                <li data-i18n="process.card2.li2">Concrete steps to improve reliability, cost, and exposure</li>
+                <li data-i18n="process.card2.li3">Better visibility into what’s actually happening in prod</li>
+                <li data-i18n="process.card2.li4">Confidence that your stack can handle the next spike</li>
+              </ul>
+              <p class="quote" data-i18n="process.card2.quote">
+                <strong>Goal:</strong> infrastructure you don’t have to think about every day,
+                so your team can ship product instead of debugging pipelines and origin leaks.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section id="contact" class="section" aria-labelledby="contact-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker" data-i18n="contact.kicker">Let’s talk</p>
+              <h2 class="section-title" id="contact-title" data-i18n="contact.title">
+                Ready when downtime isn’t an option
+              </h2>
+            </div>
+          </div>
+
+          <div class="contact-row">
+            <div class="contact-main">
+              <p data-i18n="contact.p1">
+                If you’re running a SaaS or content-heavy product and you’re worried about downtime,
+                slow deployments, cloud bills that keep climbing, or an origin that might be quietly exposed,
+                let’s talk.
+              </p>
+              <p data-i18n="contact.p2">
+                Talk me about your stack, where it hurts today, and what “success” would
+                look like in 3–6 months.
+              </p>
+            </div>
+
+            <div class="contact-actions">
+              <a href="https://calendly.com/julio-alv-tejera/30min"
+                 class="btn btn-primary" target="_blank" rel="noopener noreferrer"
+                 data-i18n="contact.cta">
+                 <span>Book a session</span>
+              </a>
+
+              <div class="contact-meta">
+                <span data-i18n="contact.meta1">Timezone: flexible / remote</span>
+                <span data-i18n="contact.meta2">Kubernetes · Terraform · SRE</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="inner">
+        <span data-i18n="footer.left">
+          © <span class="accent">Julio Alvarez</span> · DevOps &amp; SRE for SaaS.
+        </span>
+        <span data-i18n="footer.right">
+          Reliability, performance, and origins that don’t leak.
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const userLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+      const isSpanish = userLang.startsWith('es');
+      const lang = isSpanish ? 'es' : 'en';
+      document.documentElement.setAttribute('lang', lang);
+
+      const strings = {
+        en: {
+          'brand.subtitle': 'DevOps &amp; SRE for SaaS',
+          'nav.services': 'Services',
+          'nav.security': 'Security',
+          'nav.wins': 'Wins',
+          'nav.process': 'Process',
+          'nav.contact': 'Contact',
+          'nav.tagline': 'Infrastructure that just works',
+
+          'hero.kicker': 'DevOps · SRE · Origin Hardening',
+          'hero.title': 'Infrastructure that <span>works today</span>, scales tomorrow,<br>and doesn’t leak your origin.',
+          'hero.tagline': 'I help SaaS and content-heavy businesses eliminate downtime, slow deployments, runaway cloud bills, and quietly exposed origins that attackers love.',
+          'hero.badge1': 'Kubernetes · Terraform · Observability',
+          'hero.badge2': 'Origin hardening · Access controls',
+          'hero.badge3': 'Hands-on, no-fluff execution',
+          'hero.primaryCta': '<span>Book a 60–90 min audit</span><span>→</span>',
+          'hero.secondaryCta': '<span>See how I work</span>',
+          'hero.note': '<strong>Low-risk start:</strong> we begin with a focused audit, I send a prioritized action plan, and we execute in short, safe iterations — with <strong>no more “direct to origin” surprises.</strong>',
+          'hero.meta1': '<span class="dot"></span><span>Prod health: stable</span>',
+          'hero.meta2': '<span>↓ downtime</span> · <span>↓ cloud spend</span>',
+
+          'heroRight.title': 'What I do best',
+          'heroRight.desc': 'Practical DevOps &amp; SRE help where it hurts the most:',
+          'heroRight.li1': '<strong>Kubernetes reliability &amp; scaling</strong> (DO / AWS / Vultr / IBM Cloud / GCP): audits, HPA / requests-limits, node tuning, networking.',
+          'heroRight.li2': '<strong>Infrastructure as Code with Terraform:</strong> module refactors, clean pipelines, reproducible environments.',
+          'heroRight.li3': '<strong>Observability &amp; performance:</strong> New Relic / Prometheus / Grafana to catch issues before users do.',
+          'heroRight.li4': '<strong>Origin &amp; access hardening:</strong> lock down who can even reach your origin, so edge bypasses stop being a threat.',
+          'hero.pill1': 'Kubernetes audits',
+          'hero.pill2': 'Terraform refactors',
+          'hero.pill3': 'Incident prep',
+          'hero.pill4': 'Performance tuning',
+          'hero.pill5': 'Origin hardening',
+
+          'services.kicker': 'Capabilities',
+          'services.title': 'Where I plug into your stack',
+          'services.subtle': 'Think of me as your on-call DevOps / SRE partner for when “it’s fine for now” is no longer acceptable — especially in production.',
+
+          'services.card1.title': 'Kubernetes reliability &amp; scaling',
+          'services.card1.small': 'DO · AWS · Vultr · IBM Cloud · GCP',
+          'services.card1.tagline': 'From “it works on my cluster” to predictable, documented capacity.',
+          'services.card1.li1': 'Workload and cluster audits',
+          'services.card1.li2': 'HPA, requests/limits, and node sizing',
+          'services.card1.li3': 'Network and ingress sanity checks',
+          'services.card1.li4': 'Safer rollouts and blue/green strategies',
+
+          'services.card2.title': 'Terraform &amp; Infrastructure as Code',
+          'services.card2.small': 'Modules · Pipelines · Environments',
+          'services.card2.tagline': 'Clean, repeatable infra so you don’t fear <code>terraform apply</code>.',
+          'services.card2.li1': 'Module refactors and standards',
+          'services.card2.li2': 'CI pipelines for plans and applies',
+          'services.card2.li3': 'Reproducible staging / prod environments',
+          'services.card2.li4': 'Guardrails for safer changes',
+
+          'services.card3.title': 'Observability &amp; performance',
+          'services.card3.small': 'New Relic · Prometheus · Grafana',
+          'services.card3.tagline': 'Catch issues before users do, and know where time actually goes.',
+          'services.card3.li1': 'Golden signals and meaningful dashboards',
+          'services.card3.li2': 'Alert rules that engineers respect',
+          'services.card3.li3': 'Tracing slow paths and hotspots',
+          'services.card3.li4': 'Performance tuning with real data',
+
+          'services.card4.title': 'Production hardening',
+          'services.card4.small': 'Runbooks · Playbooks · Docs',
+          'services.card4.tagline': 'Make 3am incidents boring, documented, and recoverable.',
+          'services.card4.li1': 'Runbooks for common failures',
+          'services.card4.li2': 'Incident response workflows',
+          'services.card4.li3': 'Readable, useful documentation',
+          'services.card4.li4': 'Handoffs that don’t lose context',
+
+          'security.kicker': 'Security · Origin hardening',
+          'security.title': 'Stop origin leakage and edge bypasses before they hurt you',
+          'security.subtle': 'It’s not enough to put a proxy in front of your app. If attackers can still hit your origin directly, all that “security” is optional.',
+
+          'security.lock.title': 'What I lock down',
+          'security.lock.tagline': 'Hardening the path between “the internet” and your actual servers.',
+          'security.lock.li1': 'Identify where your origin is exposed or guessable',
+          'security.lock.li2': 'Ensure only traffic that passes your access layer reaches origin',
+          'security.lock.li3': 'Block direct-to-origin requests and cheap bypass attempts',
+          'security.lock.li4': 'Align rules with how your team actually works (no noisy breakage)',
+          'security.lock.quote': '<strong>Result:</strong> your origin behaves like an internal service, even if it’s technically on the public internet.',
+
+          'security.flow.title': 'How the flow looks',
+          'security.flow.tagline': 'From “anyone can try” to “only authenticated, policy-approved traffic gets through”.',
+          'security.flow.node1': 'Untrusted internet traffic',
+          'security.flow.node2': 'Access layer &amp; policy checks',
+          'security.flow.node3': 'Locked-down origin',
+          'security.flow.caption': '<strong>Only requests that clear identity &amp; policy checks</strong> are allowed to touch your origin. Everyone else gets stopped at the edge.',
+
+          'wins.kicker': 'Recent wins',
+          'wins.title': 'From “crashing under load” to “we don’t think about it anymore”',
+
+          'wins.card1.title': 'Stabilizing a crashing website',
+          'wins.card1.small': 'Observability + infra fixes',
+          'wins.card1.tagline': 'A content-heavy site was slowing to a crawl and falling over whenever traffic spiked.',
+          'wins.card1.li1': 'Instrumented the stack with New Relic',
+          'wins.card1.li2': 'Identified performance bottlenecks under load',
+          'wins.card1.li3': 'Fixed infra and configuration issues behind the scenes',
+          'wins.card1.li4': 'Result: stable, predictable performance during peaks',
+
+          'wins.card2.title': 'Kubernetes DevOps &amp; IaC delivery',
+          'wins.card2.small': '“Tremendous” and “amazing” feedback',
+          'wins.card2.tagline': 'Delivered Kubernetes DevOps, Infrastructure as Code, and documentation as a cohesive package.',
+          'wins.card2.li1': 'Production-ready Kubernetes configuration',
+          'wins.card2.li2': 'Terraform-based environments and pipelines',
+          'wins.card2.li3': 'Documentation teams actually read',
+          'wins.card2.li4': 'Clients called the result <span class="highlight">“tremendous”</span> and <span class="highlight">“amazing”</span>',
+
+          'process.kicker': 'How we start',
+          'process.title': 'Low-risk, high-signal engagement',
+          'process.subtle': 'No giant rewrites on day one. We start small, gather signal, and move fast without breaking prod — or exposing your origin in the process.',
+
+          'process.card1.title': 'Step-by-step',
+          'process.card1.step1': '01 · Audit',
+          'process.card1.step1Title': '60–90 min deep dive',
+          'process.card1.step1Desc': 'We walk through your current stack, pain points, failure modes, and where your origin might be exposed.',
+          'process.card1.step2': '02 · Action plan',
+          'process.card1.step2Title': 'Prioritized improvements',
+          'process.card1.step2Desc': 'I send a clear, ranked list of quick wins and structural fixes across reliability, costs, and security.',
+          'process.card1.step3': '03 · Iteration',
+          'process.card1.step3Title': 'Short, safe change cycles',
+          'process.card1.step3Desc': 'We execute improvements in small, reversible steps that won’t wake you up at 3am.',
+
+          'process.card2.title': 'What you get out of working with me',
+          'process.card2.tagline': 'Less fire-fighting, more predictable engineering time.',
+          'process.card2.li1': 'Clear picture of where your infra is fragile',
+          'process.card2.li2': 'Concrete steps to improve reliability, cost, and exposure',
+          'process.card2.li3': 'Better visibility into what’s actually happening in prod',
+          'process.card2.li4': 'Confidence that your stack can handle the next spike',
+          'process.card2.quote': '<strong>Goal:</strong> infrastructure you don’t have to think about every day, so your team can ship product instead of debugging pipelines and origin leaks.',
+
+          'contact.kicker': 'Let’s talk',
+          'contact.title': 'Ready when downtime isn’t an option',
+          'contact.p1': 'If you’re running a SaaS or content-heavy product and you’re worried about downtime, slow deployments, cloud bills that keep climbing, or an origin that might be quietly exposed, let’s talk.',
+          'contact.p2': 'Talk me about your stack, where it hurts today, and what “success” would look like in 3–6 months.',
+          'contact.cta': '<span>Book a session</span>',
+          'contact.meta1': 'Timezone: flexible / remote',
+          'contact.meta2': 'Kubernetes · Terraform · SRE',
+
+          'footer.left': '© <span class="accent">Julio Alvarez</span> · DevOps &amp; SRE for SaaS.',
+          'footer.right': 'Reliability, performance, and origins that don’t leak.'
+        },
+
+        es: {
+          'brand.subtitle': 'DevOps &amp; SRE para SaaS',
+          'nav.services': 'Servicios',
+          'nav.security': 'Seguridad',
+          'nav.wins': 'Casos',
+          'nav.process': 'Proceso',
+          'nav.contact': 'Contacto',
+          'nav.tagline': 'Infraestructura que simplemente funciona',
+
+          'hero.kicker': 'DevOps · SRE · Endurecimiento de origen',
+          'hero.title': 'Infraestructura que <span>funciona hoy</span>, escala mañana,<br>y no filtra tu origen.',
+          'hero.tagline': 'Ayudo a negocios SaaS y sitios con alto volumen de contenido a eliminar caídas, despliegues lentos, facturas de nube descontroladas y orígenes expuestos que los atacantes adoran.',
+          'hero.badge1': 'Kubernetes · Terraform · Observabilidad',
+          'hero.badge2': 'Endurecimiento de origen · Controles de acceso',
+          'hero.badge3': 'Ejecución práctica, sin paja',
+          'hero.primaryCta': '<span>Agenda una auditoría de 60–90 min</span><span>→</span>',
+          'hero.secondaryCta': '<span>Ver cómo trabajo</span>',
+          'hero.note': '<strong>Inicio de bajo riesgo:</strong> empezamos con una auditoría enfocada, te envío un plan de acción priorizado y ejecutamos en iteraciones cortas y seguras, <strong>sin más sorpresas de “acceso directo al origen”.</strong>',
+          'hero.meta1': '<span class="dot"></span><span>Salud de prod: estable</span>',
+          'hero.meta2': '<span>↓ caídas</span> · <span>↓ gasto en nube</span>',
+
+          'heroRight.title': 'En qué soy mejor',
+          'heroRight.desc': 'Ayuda práctica de DevOps &amp; SRE justo donde más duele:',
+          'heroRight.li1': '<strong>Confiabilidad y escalado en Kubernetes</strong> (DO / AWS / Vultr / IBM Cloud / GCP): auditorías, HPA / requests-limits, ajuste de nodos y networking.',
+          'heroRight.li2': '<strong>Infraestructura como código con Terraform:</strong> refactor de módulos, pipelines limpios y entornos reproducibles.',
+          'heroRight.li3': '<strong>Observabilidad y rendimiento:</strong> New Relic / Prometheus / Grafana para detectar problemas antes que tus usuarios.',
+          'heroRight.li4': '<strong>Endurecimiento de origen y acceso:</strong> limitando quién puede siquiera llegar a tu origen, para que dejar de lado el edge deje de ser una amenaza.',
+          'hero.pill1': 'Auditorías de Kubernetes',
+          'hero.pill2': 'Refactors de Terraform',
+          'hero.pill3': 'Preparación para incidentes',
+          'hero.pill4': 'Ajuste de rendimiento',
+          'hero.pill5': 'Endurecimiento de origen',
+
+          'services.kicker': 'Servicios',
+          'services.title': 'Dónde me integro en tu stack',
+          'services.subtle': 'Piensa en mí como tu socio DevOps / SRE bajo demanda cuando “así está bien por ahora” deja de ser aceptable, especialmente en producción.',
+
+          'services.card1.title': 'Confiabilidad y escalado en Kubernetes',
+          'services.card1.small': 'DO · AWS · Vultr · IBM Cloud · GCP',
+          'services.card1.tagline': 'De “funciona en mi cluster” a capacidad predecible y documentada.',
+          'services.card1.li1': 'Auditorías de workloads y clúster',
+          'services.card1.li2': 'HPA, requests/limits y dimensionamiento de nodos',
+          'services.card1.li3': 'Revisión de red e ingress con sentido común',
+          'services.card1.li4': 'Rollouts más seguros y estrategias blue/green',
+
+          'services.card2.title': 'Terraform e Infraestructura como código',
+          'services.card2.small': 'Módulos · Pipelines · Entornos',
+          'services.card2.tagline': 'Infraestructura limpia y repetible para que no temas a <code>terraform apply</code>.',
+          'services.card2.li1': 'Refactor y estandarización de módulos',
+          'services.card2.li2': 'Pipelines de CI para plans y applies',
+          'services.card2.li3': 'Entornos de staging / prod reproducibles',
+          'services.card2.li4': 'Guardrails para cambios más seguros',
+
+          'services.card3.title': 'Observabilidad y rendimiento',
+          'services.card3.small': 'New Relic · Prometheus · Grafana',
+          'services.card3.tagline': 'Detecta problemas antes que tus usuarios y entiende dónde se va el tiempo.',
+          'services.card3.li1': 'Golden signals y dashboards útiles',
+          'services.card3.li2': 'Alertas que el equipo respeta',
+          'services.card3.li3': 'Trazado de rutas lentas y hotspots',
+          'services.card3.li4': 'Ajuste de rendimiento basado en datos',
+
+          'services.card4.title': 'Endurecimiento de producción',
+          'services.card4.small': 'Runbooks · Playbooks · Docs',
+          'services.card4.tagline': 'Que los incidentes de las 3 a.m. sean aburridos, documentados y recuperables.',
+          'services.card4.li1': 'Runbooks para fallos comunes',
+          'services.card4.li2': 'Flujos de respuesta a incidentes',
+          'services.card4.li3': 'Documentación que la gente sí lee',
+          'services.card4.li4': 'Handoffs sin pérdida de contexto',
+
+          'security.kicker': 'Seguridad · Endurecimiento de origen',
+          'security.title': 'Detén el leakage de origen y los bypass al edge antes de que duelan',
+          'security.subtle': 'No basta con poner un proxy delante de tu app. Si un atacante aún puede llegar directo al origen, toda esa “seguridad” es opcional.',
+
+          'security.lock.title': 'Lo que dejo blindado',
+          'security.lock.tagline': 'Endureciendo el camino entre “internet” y tus servidores reales.',
+          'security.lock.li1': 'Detectar dónde tu origen está expuesto o es adivinable',
+          'security.lock.li2': 'Asegurar que solo tráfico que pasa por tu capa de acceso llegue al origen',
+          'security.lock.li3': 'Bloquear peticiones directas al origen y bypass baratos',
+          'security.lock.li4': 'Alinear reglas con cómo trabaja tu equipo (sin ruido ni roturas innecesarias)',
+          'security.lock.quote': '<strong>Resultado:</strong> tu origen se comporta como un servicio interno, aunque técnicamente esté en internet.',
+
+          'security.flow.title': 'Cómo se ve el flujo',
+          'security.flow.tagline': 'De “cualquiera puede intentar” a “solo tráfico autenticado y aprobado por política pasa”.',
+          'security.flow.node1': 'Tráfico de internet no confiable',
+          'security.flow.node2': 'Capa de acceso &amp; políticas',
+          'security.flow.node3': 'Origen bloqueado',
+          'security.flow.caption': '<strong>Solo las solicitudes que pasan identidad y políticas</strong> llegan a tu origen. El resto se queda detenido en el borde.',
+
+          'wins.kicker': 'Casos recientes',
+          'wins.title': 'De “se cae con carga” a “ya ni pensamos en eso”',
+
+          'wins.card1.title': 'Estabilizando un sitio que se caía',
+          'wins.card1.small': 'Observabilidad + ajustes de infraestructura',
+          'wins.card1.tagline': 'Un sitio con mucho contenido se volvía lento y se caía cada vez que subía el tráfico.',
+          'wins.card1.li1': 'Instrumentación del stack con New Relic',
+          'wins.card1.li2': 'Identificación de cuellos de botella bajo carga',
+          'wins.card1.li3': 'Correcciones de infraestructura y configuración tras bambalinas',
+          'wins.card1.li4': 'Resultado: rendimiento estable y predecible en picos de tráfico',
+
+          'wins.card2.title': 'Entrega de DevOps en Kubernetes &amp; IaC',
+          'wins.card2.small': 'Feedback: “Tremendous” y “amazing”',
+          'wins.card2.tagline': 'Entrega conjunta de Kubernetes, Infraestructura como código y documentación lista para producción.',
+          'wins.card2.li1': 'Configuración de Kubernetes lista para producción',
+          'wins.card2.li2': 'Entornos y pipelines basados en Terraform',
+          'wins.card2.li3': 'Documentación que los equipos realmente usan',
+          'wins.card2.li4': 'Clientes describieron el resultado como <span class="highlight">“tremendous”</span> y <span class="highlight">“amazing”</span>',
+
+          'process.kicker': 'Cómo empezamos',
+          'process.title': 'Engagement de bajo riesgo y alta señal',
+          'process.subtle': 'Nada de reescrituras gigantes el primer día. Empezamos pequeño, recogemos señal y avanzamos rápido sin romper producción — ni exponer tu origen en el camino.',
+
+          'process.card1.title': 'Paso a paso',
+          'process.card1.step1': '01 · Auditoría',
+          'process.card1.step1Title': 'Deep dive de 60–90 min',
+          'process.card1.step1Desc': 'Revisamos tu stack actual, puntos de dolor, modos de fallo y posibles exposiciones de origen.',
+          'process.card1.step2': '02 · Plan de acción',
+          'process.card1.step2Title': 'Mejoras priorizadas',
+          'process.card1.step2Desc': 'Te envío una lista clara y ordenada de quick wins y mejoras estructurales en confiabilidad, coste y seguridad.',
+          'process.card1.step3': '03 · Iteración',
+          'process.card1.step3Title': 'Ciclos cortos y seguros',
+          'process.card1.step3Desc': 'Ejecutamos mejoras en pasos pequeños y reversibles, sin despertar a nadie a las 3 a.m.',
+
+          'process.card2.title': 'Qué obtienes al trabajar conmigo',
+          'process.card2.tagline': 'Menos apagar incendios, más tiempo de ingeniería predecible.',
+          'process.card2.li1': 'Una visión clara de dónde tu infraestructura es frágil',
+          'process.card2.li2': 'Pasos concretos para mejorar confiabilidad, coste y exposición',
+          'process.card2.li3': 'Mejor visibilidad de lo que pasa realmente en producción',
+          'process.card2.li4': 'Confianza en que tu stack soporta el siguiente pico de tráfico',
+          'process.card2.quote': '<strong>Objetivo:</strong> una infraestructura de la que no tengas que estar pendiente todos los días, para que tu equipo pueda enfocarse en producto en lugar de depurar pipelines y fugas de origen.',
+
+          'contact.kicker': 'Hablemos',
+          'contact.title': 'Listo para cuando las caídas no son opción',
+          'contact.p1': 'Si operas un SaaS o un producto con mucho contenido y te preocupan las caídas, los despliegues lentos, las facturas de nube que no paran de subir o un origen que podría estar expuesto en silencio, hablemos.',
+          'contact.p2': 'Cuéntame tu stack, dónde duele hoy y cómo se vería el “éxito” en 3–6 meses.',
+          'contact.cta': '<span>Agenda una sesión</span>',
+          'contact.meta1': 'Zona horaria: flexible / remoto',
+          'contact.meta2': 'Kubernetes · Terraform · SRE',
+
+          'footer.left': '© <span class="accent">Julio Alvarez</span> · DevOps &amp; SRE para SaaS.',
+          'footer.right': 'Confiabilidad, rendimiento y orígenes que no filtran.'
+        }
+      };
+
+      document.querySelectorAll('[data-i18n]').forEach(function (el) {
+        const key = el.getAttribute('data-i18n');
+        const dict = strings[lang] || strings.en;
+        const value = dict[key];
+        if (!value) return;
+
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          if (el.hasAttribute('placeholder')) {
+            el.placeholder = value;
+          }
+        } else {
+          el.innerHTML = value;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
