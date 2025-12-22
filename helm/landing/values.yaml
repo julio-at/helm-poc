@@ -1,10 +1,15 @@
 replicaCount: 1
 
-image:
-  repository: landing-static
-  tag: dev
-  pullPolicy: IfNotPresent
+#image:
+#  repository: landing-static
+#  tag: dev
+#  pullPolicy: IfNotPresent
 
+image:
+  repository: registry.digitalocean.com/guajiro/landing-static
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+  
 service:
   type: ClusterIP
   port: 80
